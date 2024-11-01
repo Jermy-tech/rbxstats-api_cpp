@@ -17,6 +17,25 @@ A C++ client library for interacting with the [RbxStats API](https://api.rbxstat
 
 ## Installation
 
+### For Windows
+
+1. **Install `libcurl`**:
+   - Download the latest version of `libcurl` from [curl.se](https://curl.se/download.html) and follow the instructions for building and linking it with your project.
+   - You can also use a package manager like [vcpkg](https://github.com/microsoft/vcpkg):
+     ```bash
+     git clone https://github.com/microsoft/vcpkg.git
+     .\vcpkg\bootstrap-vcpkg.bat
+     .\vcpkg\vcpkg install curl
+     ```
+
+2. **Install `nlohmann/json`**:
+   - You can add the single-header version of `nlohmann/json` to your project, or install it via vcpkg:
+     ```bash
+     .\vcpkg\vcpkg install nlohmann-json
+     ```
+
+### For Linux/Mac
+
 1. **Install `libcurl`**:
    - For Ubuntu/Debian:
      ```bash

@@ -33,7 +33,7 @@ To use the RbxStats C++ API Client, include the `rbxstats_api.h` header file in 
 Here is a simple example of how to use the RbxStats API client to fetch all offsets:
 
 ```cpp
-#include "rbxstats_api.h"
+#include "rbxstats.h"
 #include <iostream>
 
 int main() {

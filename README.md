@@ -12,54 +12,21 @@ A C++ client library for interacting with the [RbxStats API](https://api.rbxstat
 ## Requirements
 
 - C++11 or later
-- [libcurl](https://curl.se/libcurl/)
-- [nlohmann/json](https://github.com/nlohmann/json) for JSON handling
+- Windows (for WinINet)
 
 ## Installation
 
 ### For Windows
 
-1. **Install `libcurl`**:
-   - Download the latest version of `libcurl` from [curl.se](https://curl.se/download.html) and follow the instructions for building and linking it with your project.
-   - You can also use a package manager like [vcpkg](https://github.com/microsoft/vcpkg):
-     ```bash
-     git clone https://github.com/microsoft/vcpkg.git
-     .\vcpkg\bootstrap-vcpkg.bat
-     .\vcpkg\vcpkg install curl
-     ```
+1. **Set Up Your Project**: 
+   - Ensure you have a C++ development environment set up. You can use an IDE like Visual Studio.
 
-2. **Install `nlohmann/json`**:
-   - You can add the single-header version of `nlohmann/json` to your project, or install it via vcpkg:
-     ```bash
-     .\vcpkg\vcpkg install nlohmann-json
-     ```
-
-### For Linux/Mac
-
-1. **Install `libcurl`**:
-   - For Ubuntu/Debian:
-     ```bash
-     sudo apt-get install libcurl4-openssl-dev
-     ```
-   - For macOS:
-     ```bash
-     brew install curl
-     ```
-
-2. **Install `nlohmann/json`**:
-   You can add the single-header version of `nlohmann/json` to your project, or install it via your package manager:
-   - For Ubuntu:
-     ```bash
-     sudo apt-get install nlohmann-json-dev
-     ```
-   - For macOS:
-     ```bash
-     brew install nlohmann-json
-     ```
+2. **Include WinINet**: 
+   - Make sure your project links against the `wininet.lib`. You can add it in your project properties under Linker -> Input -> Additional Dependencies.
 
 ## Usage
 
-To use the RbxStats C++ API Client, include the `rbxstats_api.h` header file in your project and link against the required libraries.
+To use the RbxStats C++ API Client, include the `rbxstats_api.h` header file in your project.
 
 ### Example
 
@@ -76,8 +43,10 @@ int main() {
         json offsets = client.offsets.get_all();
         std::cout << "Offsets: " << offsets.dump(4) << std::endl;
 
-        std::string plain_offsets = client.offsets.get_all_plain();
-        std::cout << "Plain Offsets: " << plain_offsets << std::endl;
+        // To get game information by ID
+        int game_id = 123456; // Replace with a valid game ID
+        json game_info = client.game.get_game_by_id(game_id);
+        std::cout << "Game Info: " << game_info.dump(4) << std::endl;
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
@@ -91,7 +60,6 @@ int main() {
 #### Offsets
 
 - `get_all()`: Fetch all Roblox offsets in JSON format.
-- `get_all_plain()`: Fetch all Roblox offsets in plain text format.
 - `get_offset_by_name(const std::string &name)`: Get specific offset by name.
 - `get_offsets_by_prefix(const std::string &prefix)`: Fetch all offsets with a specific prefix.
 - `get_camera()`: Fetch all camera offsets.
@@ -111,7 +79,6 @@ int main() {
 #### Game
 
 - `get_game_by_id(int game_id)`: Get game information by game ID.
-- `get_game_by_id_plain(int game_id)`: Get game information in plain text.
 
 ## Error Handling
 
@@ -124,10 +91,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue for discussion.
-
 ```
 
 ### Notes
+- The JSON parsing part is handled in the new implementation without relying on external libraries, so you might want to ensure that the JSON parsing functionality in your code is robust.
 - Replace `"YOUR_API_KEY"` with the actual API key when running examples.
-- Update the contact email and any other relevant information as needed.
-- Add more details to the "Contributing" section if necessary, depending on how you want to handle contributions.
+- Make sure to test the example code in your development environment to ensure it works as intended with the new API client structure.

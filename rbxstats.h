@@ -6,7 +6,6 @@
 #include <string>
 #include <stdexcept>
 #include <map>
-#include <vector>
 #include <sstream>
 #include <iostream>
 
@@ -42,28 +41,33 @@ private:
     }
 
     // Simple JSON-like parsing function to extract data
-    std::map<std::string, std::string> parse_json(const std::string &response) {
+    static std::map<std::string, std::string> parse_json(const std::string &response) {
         std::map<std::string, std::string> result;
         std::string key, value;
         bool inQuotes = false;
-        
+        bool readingValue = false;
+
         for (size_t i = 0; i < response.size(); ++i) {
             char ch = response[i];
 
             if (ch == '\"') {
                 inQuotes = !inQuotes;
                 if (!inQuotes && !key.empty()) {
-                    // We finished a key
-                    result[key] = value;
-                    key.clear();
-                    value.clear();
+                    if (!readingValue) {
+                        readingValue = true;
+                    } else {
+                        result[key] = value;
+                        key.clear();
+                        value.clear();
+                        readingValue = false;
+                    }
                 }
             } else if (inQuotes) {
-                if (key.empty() && ch == ':') {
-                    // Switch to value
-                    continue; // Skip the colon
+                if (!readingValue) {
+                    key += ch;
+                } else {
+                    value += ch;
                 }
-                (key.empty() ? key : value) += ch;
             }
         }
 
@@ -71,151 +75,60 @@ private:
     }
 
 public:
-    RbxStatsClient(const std::string &key) : api_key(key) {}
+    explicit RbxStatsClient(const std::string &key) : api_key(key) {}
 
-    // Nested Offsets class
-    class Offsets {
-    private:
+    class NestedBase {
+    protected:
         RbxStatsClient &client;
 
-        std::string api_url(const std::string &endpoint) {
+        NestedBase(RbxStatsClient &client) : client(client) {}
+
+        std::string api_url(const std::string &endpoint) const {
             return "https://api.rbxstats.xyz/api/" + endpoint + "?api=" + client.api_key;
         }
 
-    public:
-        Offsets(RbxStatsClient &client) : client(client) {}
-
-        // Fetches all offsets
-        std::map<std::string, std::string> get_all() {
-            return fetch("offsets");
-        }
-
-        // Fetches specific offset by name
-        std::map<std::string, std::string> get_offset_by_name(const std::string &name) {
-            return fetch("offsets/search/" + name);
-        }
-
-        // Fetches offsets by prefix
-        std::map<std::string, std::string> get_offsets_by_prefix(const std::string &prefix) {
-            return fetch("offsets/prefix/" + prefix);
-        }
-
-        // Fetches camera-related offsets
-        std::map<std::string, std::string> get_camera() {
-            return fetch("offsets/camera");
-        }
-
-    private:
-        std::map<std::string, std::string> fetch(const std::string &endpoint) {
+        std::map<std::string, std::string> fetch(const std::string &endpoint) const {
             std::string url = api_url(endpoint);
             std::string response = client.perform_get_request(url);
             return parse_json(response);
         }
     };
 
-    // Nested Exploits class
-    class Exploits {
-    private:
-        RbxStatsClient &client;
-
-        std::string api_url(const std::string &endpoint) {
-            return "https://api.rbxstats.xyz/api/" + endpoint + "?api=" + client.api_key;
-        }
-
+    class Offsets : public NestedBase {
     public:
-        Exploits(RbxStatsClient &client) : client(client) {}
+        explicit Offsets(RbxStatsClient &client) : NestedBase(client) {}
 
-        // Fetches all exploits
-        std::map<std::string, std::string> get_all() {
-            return fetch("exploits");
-        }
-
-        // Fetches Windows exploits
-        std::map<std::string, std::string> get_windows() {
-            return fetch("exploits/windows");
-        }
-
-        // Fetches Mac exploits
-        std::map<std::string, std::string> get_mac() {
-            return fetch("exploits/mac");
-        }
-
-        // Fetches undetected exploits
-        std::map<std::string, std::string> get_undetected() {
-            return fetch("exploits/undetected");
-        }
-
-        // Fetches detected exploits
-        std::map<std::string, std::string> get_detected() {
-            return fetch("exploits/detected");
-        }
-
-        // Fetches free exploits
-        std::map<std::string, std::string> get_free() {
-            return fetch("exploits/free");
-        }
-
-    private:
-        std::map<std::string, std::string> fetch(const std::string &endpoint) {
-            std::string url = api_url(endpoint);
-            std::string response = client.perform_get_request(url);
-            return parse_json(response);
-        }
+        std::map<std::string, std::string> get_all() { return fetch("offsets"); }
+        std::map<std::string, std::string> get_offset_by_name(const std::string &name) { return fetch("offsets/search/" + name); }
+        std::map<std::string, std::string> get_offsets_by_prefix(const std::string &prefix) { return fetch("offsets/prefix/" + prefix); }
+        std::map<std::string, std::string> get_camera() { return fetch("offsets/camera"); }
     };
 
-    // Nested Versions class
-    class Versions {
-    private:
-        RbxStatsClient &client;
-
-        std::string api_url(const std::string &endpoint) {
-            return "https://api.rbxstats.xyz/api/" + endpoint + "?api=" + client.api_key;
-        }
-
+    class Exploits : public NestedBase {
     public:
-        Versions(RbxStatsClient &client) : client(client) {}
+        explicit Exploits(RbxStatsClient &client) : NestedBase(client) {}
 
-        // Fetches the latest version
-        std::map<std::string, std::string> get_latest() {
-            return fetch("versions/latest");
-        }
-
-        // Fetches the future version
-        std::map<std::string, std::string> get_future() {
-            return fetch("versions/future");
-        }
-
-    private:
-        std::map<std::string, std::string> fetch(const std::string &endpoint) {
-            std::string url = api_url(endpoint);
-            std::string response = client.perform_get_request(url);
-            return parse_json(response);
-        }
+        std::map<std::string, std::string> get_all() { return fetch("exploits"); }
+        std::map<std::string, std::string> get_windows() { return fetch("exploits/windows"); }
+        std::map<std::string, std::string> get_mac() { return fetch("exploits/mac"); }
+        std::map<std::string, std::string> get_undetected() { return fetch("exploits/undetected"); }
+        std::map<std::string, std::string> get_detected() { return fetch("exploits/detected"); }
+        std::map<std::string, std::string> get_free() { return fetch("exploits/free"); }
     };
 
-    // Nested Game class
-    class Game {
-    private:
-        RbxStatsClient &client;
-
-        std::string api_url(const std::string &endpoint) {
-            return "https://api.rbxstats.xyz/api/" + endpoint + "?api=" + client.api_key;
-        }
-
+    class Versions : public NestedBase {
     public:
-        Game(RbxStatsClient &client) : client(client) {}
+        explicit Versions(RbxStatsClient &client) : NestedBase(client) {}
 
-        // Fetches game information by ID
-        std::map<std::string, std::string> get_game_by_id(int game_id) {
-            return fetch("game/" + std::to_string(game_id));
-        }
+        std::map<std::string, std::string> get_latest() { return fetch("versions/latest"); }
+        std::map<std::string, std::string> get_future() { return fetch("versions/future"); }
+    };
 
-    private:
-        std::map<std::string, std::string> fetch(const std::string &endpoint) {
-            std::string url = api_url(endpoint);
-            std::string response = client.perform_get_request(url);
-            return parse_json(response);
-        }
+    class Game : public NestedBase {
+    public:
+        explicit Game(RbxStatsClient &client) : NestedBase(client) {}
+
+        std::map<std::string, std::string> get_game_by_id(int game_id) { return fetch("game/" + std::to_string(game_id)); }
     };
 
     Offsets offsets{*this};

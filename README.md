@@ -35,18 +35,27 @@ Here is a simple example of how to use the RbxStats API client to fetch all offs
 ```cpp
 #include "rbxstats.h"
 #include <iostream>
+#include <map> // Include for std::map
+#include <string> // Include for std::string
 
 int main() {
     RbxStatsClient client("YOUR_API_KEY");
 
     try {
-        json offsets = client.offsets.get_all();
-        std::cout << "Offsets: " << offsets.dump(4) << std::endl;
+        // Get all offsets
+        auto offsets = client.offsets.get_all();
+        std::cout << "Offsets:\n";
+        for (const auto &entry : offsets) {
+            std::cout << entry.first << ": " << entry.second << std::endl;
+        }
 
-        // To get game information by ID
+        // Get game information by ID
         int game_id = 123456; // Replace with a valid game ID
-        json game_info = client.game.get_game_by_id(game_id);
-        std::cout << "Game Info: " << game_info.dump(4) << std::endl;
+        auto game_info = client.game.get_game_by_id(game_id);
+        std::cout << "\nGame Info:\n";
+        for (const auto &entry : game_info) {
+            std::cout << entry.first << ": " << entry.second << std::endl;
+        }
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }

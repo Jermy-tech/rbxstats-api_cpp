@@ -35,28 +35,55 @@ Here is a simple example of how to use the RbxStats API client to fetch all offs
 ```cpp
 #include "rbxstats.h"
 #include <iostream>
-#include <map> // Include for std::map
-#include <string> // Include for std::string
+#include <string>
+#include <map>
 
 int main() {
-    RbxStatsClient client("YOUR_API_KEY");
+    // Replace with your actual API key
+    std::string api_key = "API_KEY";
+
+    // Instantiate the RbxStatsClient
+    RbxStatsClient client(api_key);
 
     try {
-        // Get all offsets
-        auto offsets = client.offsets.get_all();
-        std::cout << "Offsets:\n";
-        for (const auto &entry : offsets) {
+        // Fetch all offsets
+        std::cout << "Fetching all offsets..." << std::endl;
+        std::map<std::string, std::string> offsets = client.offsets.get_all();
+        for (const auto& entry : offsets) {
             std::cout << entry.first << ": " << entry.second << std::endl;
         }
 
-        // Get game information by ID
-        int game_id = 123456; // Replace with a valid game ID
-        auto game_info = client.game.get_game_by_id(game_id);
-        std::cout << "\nGame Info:\n";
-        for (const auto &entry : game_info) {
+        // Fetch specific offset by name
+        std::cout << "\nFetching offset by name..." << std::endl;
+        std::string offset_name = "Workspace";
+        std::map<std::string, std::string> specific_offset = client.offsets.get_offset_by_name(offset_name);
+        for (const auto& entry : specific_offset) {
             std::cout << entry.first << ": " << entry.second << std::endl;
         }
-    } catch (const std::exception &e) {
+
+        // Fetch undetected exploits
+        std::cout << "\nFetching undetected exploits..." << std::endl;
+        std::map<std::string, std::string> undetected_exploits = client.exploits.get_undetected();
+        for (const auto& entry : undetected_exploits) {
+            std::cout << entry.first << ": " << entry.second << std::endl;
+        }
+
+        // Fetch the latest version
+        std::cout << "\nFetching the latest version..." << std::endl;
+        std::map<std::string, std::string> latest_version = client.versions.get_latest();
+        for (const auto& entry : latest_version) {
+            std::cout << entry.first << ": " << entry.second << std::endl;
+        }
+
+        // Fetch game information by ID
+        std::cout << "\nFetching game information by ID..." << std::endl;
+        int game_id = 123456; // Replace with a gameID
+        std::map<std::string, std::string> game_info = client.game.get_game_by_id(game_id);
+        for (const auto& entry : game_info) {
+            std::cout << entry.first << ": " << entry.second << std::endl;
+        }
+    }
+    catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
 
